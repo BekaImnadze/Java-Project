@@ -1,27 +1,26 @@
 package com.spotify_clone.spotify_clone.entities;
 
+import com.spotify_clone.spotify_clone.enums.UserStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.Set;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
 
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String username;
-    private String email;
     private String password;
-
+    private String email;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Role> roles;
     @Enumerated(EnumType.STRING)
-    private Role role;
-
-    private boolean isActive;
-    private boolean isBlocked;
+    private UserStatus status;
+    private String verificationCode;
 }

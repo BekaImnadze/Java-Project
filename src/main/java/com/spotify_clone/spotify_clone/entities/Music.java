@@ -9,12 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Statistics {
-
+public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String name;
+    private String author;
+    @ManyToOne
+    private Album album;
 
-    private Long songId;
-    private int playCount;
+    @ManyToOne
+    private Genre genre;
 }
