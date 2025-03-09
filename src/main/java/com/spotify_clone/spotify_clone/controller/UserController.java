@@ -6,7 +6,6 @@ import com.spotify_clone.spotify_clone.entities.User;
 import com.spotify_clone.spotify_clone.enums.UserRole;
 import com.spotify_clone.spotify_clone.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,12 +19,15 @@ import java.util.Map;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+
+    public UserController(UserService userService, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDto userDto, @RequestParam UserRole role) {
@@ -51,7 +53,11 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> profile(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Invalid or missing Authorization header");
+        }
+        String token = authHeader.substring(7);
         String username = jwtUtil.getUsernameFromToken(token);
         User user = userService.findByUsername(username);
         return ResponseEntity.ok(user);

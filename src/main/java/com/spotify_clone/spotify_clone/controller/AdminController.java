@@ -42,7 +42,7 @@ public class AdminController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<org.apache.catalina.User>> searchUsers(@RequestParam String query) {
+    public ResponseEntity<List<User>> searchUsers(@RequestParam String query) {
         return ResponseEntity.ok(userService.searchUsers(query));
     }
 }

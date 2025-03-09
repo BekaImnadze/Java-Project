@@ -63,8 +63,8 @@ public class MusicService {
     }
 
     public List<Music> getSimilarArtists(Long artistId) {
-        User artist = musicRepository.findByAlbumArtistId(artistId).get(0).getAlbum().getArtist();
-        List<Music> artistMusics = musicRepository.findByAlbumArtistId(artistId);
+        User artist = musicRepository.findByAlbum_ArtistId(artistId).get(0).getAlbum().getArtist();
+        List<Music> artistMusics = musicRepository.findByAlbum_ArtistId(artistId);
         if(artistMusics.isEmpty()){
             return new ArrayList<>();
         }
@@ -74,7 +74,7 @@ public class MusicService {
     }
 
     public List<Playlist> generateSessionPlaylists(Long userId) {
-        List<ListenStatistic> userStatistics = listenStatisticRepository.findByMusicAlbumArtistId(userId);
+        List<ListenStatistic> userStatistics = listenStatisticRepository.findByMusic_Album_ArtistId(userId);
         if (userStatistics.isEmpty()) {
             return new ArrayList<>();
         }
@@ -91,7 +91,7 @@ public class MusicService {
         for (Genre genre : topGenres) {
             Playlist playlist = new Playlist();
             playlist.setName(genre.getName() + " Session");
-            playlist.setOwner(musicRepository.findByAlbumArtistId(userId).get(0).getAlbum().getArtist());
+            playlist.setOwner(musicRepository.findByAlbum_ArtistId(userId).get(0).getAlbum().getArtist());
             List<Music> genreMusics = musicRepository.findByGenre(genre);
             playlist.setMusics(genreMusics.stream().limit(20).collect(Collectors.toSet()));
             sessionPlaylists.add(playlist);

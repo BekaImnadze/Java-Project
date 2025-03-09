@@ -13,5 +13,5 @@ import java.util.Optional;
 public interface ListenStatisticRepository extends JpaRepository<ListenStatistic, Long> {
     Optional<ListenStatistic> findByMusicAndStatisticDate(Music music, LocalDate date);
     List<ListenStatistic> findByStatisticDate(LocalDate date);
-    List<ListenStatistic> findByMusicAlbumArtistId(Long artistId);
+    List<ListenStatistic> findByMusic_Album_ArtistId(Long artistId);
 }
