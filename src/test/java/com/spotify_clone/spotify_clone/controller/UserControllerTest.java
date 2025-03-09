@@ -1,90 +1,76 @@
 package com.spotify_clone.spotify_clone.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spotify_clone.spotify_clone.config.JwtUtil;
 import com.spotify_clone.spotify_clone.dto.UserDto;
 import com.spotify_clone.spotify_clone.entities.User;
 import com.spotify_clone.spotify_clone.enums.UserRole;
 import com.spotify_clone.spotify_clone.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(UserController.class)
 public class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @MockBean
     private UserService userService;
 
-    private UserDto userDto;
-    private User user;
+    @MockBean
+    private JwtUtil jwtUtil;
 
-    @BeforeEach
-    void setUp() {
-        userDto = new UserDto();
-        userDto.setUsername("testUser");
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    public void testRegister() throws Exception {
+        UserDto userDto = new UserDto();
+        userDto.setUsername("testuser");
         userDto.setPassword("password");
         userDto.setEmail("test@example.com");
 
-        user = new User();
-        user.setId(1L);
-        user.setUsername("testUser");
-        user.setPassword("encodedPassword");
-        user.setEmail("test@example.com");
-    }
+        User user = new User();
+        user.setUsername("testuser");
+        when(userService.register(any(UserDto.class), eq(UserRole.LISTENER))).thenReturn(user);
 
-    @Test
-    void register_ShouldReturnOkAndMessage() throws Exception {
-        when(userService.register(any(UserDto.class), any(UserRole.class))).thenReturn(user);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/users/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto))
-                        .param("role", "LISTENER"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath(
-                        "<span class=""));
-}
-    @Test
-    void verify\_ShouldReturnOkAndMessage\(\) throws Exception \{
-        mockMvc\.perform\(MockMvcRequestBuilders\.post\("/api/users/verify"\)
-\.param\("email", "test@example\.com"\)
-\.param\("code", "123456"\)\)
-\.andExpect\(MockMvcResultMatchers\.status\(\)\.isOk\(\)\)
-\.andExpect\(MockMvcResultMatchers\.jsonPath\("</span>.message").value("Email verified successfully."));
-    }
-
-    @Test
-    void login_ShouldReturnOkAndToken() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/users/login")
+        mockMvc.perform(post("/api/users/register")
+                        .param("role", "LISTENER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("<span class="math-inline">\.token"\)\.exists\(\)\);</9\>
-\}
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("User registered successfully, please verify your email."));
+    }
+
     @Test
-    void profile\_ShouldReturnOkAndUser\(\) throws Exception \{
-        when\(userService\.findByUsername\("testUser"\)\)\.thenReturn\(user\);
-        mockMvc\.perform\(MockMvcRequestBuilders\.get\("/api/users/profile"\)
-\.header\("Authorization", "Bearer testToken"\)\)
-\.andExpect\(MockMvcResultMatchers\.status\(\)\.isOk\(\)\)
-\.andExpect\(MockMvcResultMatchers\.jsonPath\("</span>.username").value("testUser"));
+    public void testLogin() throws Exception {
+        // Arrange
+        UserDto userDto = new UserDto();
+        userDto.setUsername("testuser");
+        userDto.setPassword("password");
+
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken("testuser", "password");
+        when(authenticationManager.authenticate(any())).thenReturn(authToken);
+        when(jwtUtil.generateToken(authToken)).thenReturn("jwt-token");
+
+        mockMvc.perform(post("/api/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("jwt-token"));
     }
 }
-

@@ -18,7 +18,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     private UserService userService;
     private JwtUtil jwtUtil;
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserService userService, JwtUtil jwtUtil) {
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserService userService) {
         super(authenticationManager);
         this.userService = userService;
         this.jwtUtil = jwtUtil;

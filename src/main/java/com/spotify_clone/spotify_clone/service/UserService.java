@@ -11,11 +11,13 @@ import com.spotify_clone.spotify_clone.repositories.RoleRepository;
 import com.spotify_clone.spotify_clone.repositories.UserRepository;
 import com.spotify_clone.spotify_clone.util.RandomCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -42,9 +44,11 @@ public class UserService {
         user.setStatus(UserStatus.PENDING);
         user.setVerificationCode(randomCodeGenerator.generateCode());
 
-        Role userRole = roleRepository.findByName(role);
+        Optional<Role> userRole = roleRepository.findByName(role);
         Set<Role> roles = new HashSet<>();
-        roles.add(userRole);
+        if (userRole.isPresent()) {
+            roles.add(userRole.get());
+        }
         user.setRoles(roles);
 
         userRepository.save(user);
@@ -88,11 +92,20 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<org.apache.catalina.User> searchUsers(String query) {
+    public List<User> searchUsers(String query) {
         return userRepository.findByUsernameContainingIgnoreCase(query);
     }
 
-    public User findById(Long id) {
-        return (User) userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+    public List<User> findAll() {
+        return userRepository.findAll(); // Added findAll() method
+
+    }
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
+
+    public Authentication loadUserByUsername(String username) {
+        return userRepository.loadByUsername(username);
     }
 }
